@@ -5,12 +5,12 @@ import random
 import math
 
 class neural_network():
-	def __init__(self):
+	def __init__(self, in_ ,st_ ,out_):
 		self.generate_hyper_parameters()
-		self.generate_network(1, 1, 1)
+		self.generate_network(in_ ,st_ ,out_)
 		# self.create_simple_network()
 		self.generate_initial_connections()
-		show_network_topology(self.input_neurons, self.standard_neurons, self.output_neurons)
+		# show_network_topology(self.input_neurons, self.standard_neurons, self.output_neurons)
 
 	def generate_hyper_parameters(self):
 		self.neuron_range = 3.5
@@ -23,61 +23,71 @@ class neural_network():
 
 	def generate_initial_connections(self):
 		for i in range(0, len(self.input_neurons)):
-			self.generate_input_connection(i)			
+			self.generate_input_connection(i)
 		for i in range(0, len(self.standard_neurons)):
-			self.generate_standard_connection(i)			
+			self.generate_standard_connection(i)
 
 	def generate_input_connection(self, input_neuron_index):
 		list_of_neurons_in_range = []
 		pose = self.input_neurons[input_neuron_index].pose
-		distance_list = []
+		distance_list_st = []
+		connection_made = False
 		for st_n in self.standard_neurons:
 			distance = math.sqrt((st_n.pose[0] - pose[0])**2 + (st_n.pose[1] - pose[1])**2 + (st_n.pose[2] - pose[2])**2)
-			distance_list.append(distance)
+			distance_list_st.append(["s", distance])
 			if distance < self.neuron_range:
-				if random.uniform(0,1) > 0.7:
-					self.input_neurons[input_neuron_index].input_ids.append(st_n.id)
-		if self.input_neurons[input_neuron_index].input_ids == []:  # if no connection established
-			self.input_neurons[input_neuron_index].input_ids.append(self.standard_neurons[min(range(len(distance_list)), key=distance_list.__getitem__)].id)
+				if random.uniform(0,1) > 0.85:
+					self.input_neurons[input_neuron_index].output_ids.append(st_n.id)
+					connection_made = True
+
+		if connection_made == False:  # if no connection made
+			min_st = min(range(len(distance_list_st)), key=distance_list_st.__getitem__)
+			self.input_neurons[input_neuron_index].output_ids.append(self.standard_neurons[min_st].id)	
 
 	def generate_standard_connection(self, standard_neuron_index):
 		list_of_neurons_in_range = []
 		pose = self.standard_neurons[standard_neuron_index].pose
 		distance_list_st = []
 		distance_list_out = []
-
+		connection_made = False
 		# for other standard neurons:
 		for st_n in self.standard_neurons:
 			distance = math.sqrt((st_n.pose[0] - pose[0])**2 + (st_n.pose[1] - pose[1])**2 + (st_n.pose[2] - pose[2])**2)
 			distance_list_st.append(["s", distance])
 			if distance < self.neuron_range:
 				if random.uniform(0,1) > 0.85:
-					self.standard_neurons[standard_neuron_index].input_ids.append(["standard", st_n.id])
+					self.standard_neurons[standard_neuron_index].output_ids.append(["standard", st_n.id])
+					connection_made = True
 		for out_n in self.output_neurons:
 			distance = math.sqrt((out_n.pose[0] - pose[0])**2 + (out_n.pose[1] - pose[1])**2 + (out_n.pose[2] - pose[2])**2)
 			distance_list_out.append(["o", distance])
 			if distance < self.neuron_range:
 				if random.uniform(0,1) > 0.1:
-					self.standard_neurons[standard_neuron_index].input_ids.append(["output", out_n.id])
+					self.standard_neurons[standard_neuron_index].output_ids.append(["output", out_n.id])
+					connection_made = True
 
-		# for output neurons:
-		# for st_n in self.output_neurons:
-		# 	distance = math.sqrt((st_n.pose[0] - pose[0])**2 + (st_n.pose[1] - pose[1])**2 + (st_n.pose[2] - pose[2])**2)
-		# 	distance_list.append(distance)
-		# 	if distance < self.neuron_range:
-		# 		if random.uniform(0,1) > 0.7:
-		# 			self.standard_neurons[standard_neuron_index].input_ids.append(st_n.id)
-
-		if self.standard_neurons[standard_neuron_index].input_ids == []:
+		if connection_made == False:
 			min_out = min(range(len(distance_list_out)), key=distance_list_out.__getitem__)
 			min_st = min(range(len(distance_list_st)), key=distance_list_st.__getitem__)
 			if  min_out >= min_st:
-				self.standard_neurons[standard_neuron_index].input_ids.append(["standard", self.standard_neurons[min_st].id])	
+				self.standard_neurons[standard_neuron_index].output_ids.append(["standard", self.standard_neurons[min_st].id])	
 			else:
-				self.standard_neurons[standard_neuron_index].input_ids.append(["output", self.output_neurons[min_out].id])	
+				self.standard_neurons[standard_neuron_index].output_ids.append(["output", self.output_neurons[min_out].id])	
 
-		# if self.standard_neurons[standard_neuron_index].input_ids == []:  # if no connection established
-		# 	self.standard_neurons[standard_neuron_index].input_ids.append(["output", self.output_neurons[min(range(len(distance_list)), key=distance_list.__getitem__)].id])
+	def generate_output_connection(self, input_neuron_index):
+		list_of_neurons_in_range = []
+		pose = self.input_neurons[input_neuron_index].pose
+		distance_list = []
+		connection_made = False
+		for st_n in self.standard_neurons:
+			distance = math.sqrt((st_n.pose[0] - pose[0])**2 + (st_n.pose[1] - pose[1])**2 + (st_n.pose[2] - pose[2])**2)
+			distance_list.append(distance)
+			if distance < self.neuron_range:
+				if random.uniform(0,1) > 0.7:
+					st_n.output_ids.append(self.input_neurons[input_neuron_index].id)
+					connection_made = True
+		if connection_made == False:
+			self.input_neurons[input_neuron_index].output_ids.append(self.standard_neurons[min(range(len(distance_list)), key=distance_list.__getitem__)].id)
 
 	def generate_network(self, no_inputs, no_standards, no_outputs):
 		self.build_input_shape(no_inputs)
@@ -157,10 +167,11 @@ class neural_network():
 		fired = [False for i in self.output_neurons]
 		for index, output_neuron in enumerate(self.output_neurons):
 			fired[index] = output_neuron.update()
-		print(fired)
 
-		show_network_topology(self.input_neurons, self.standard_neurons, self.output_neurons)
+		# show_network_topology(self.input_neurons, self.standard_neurons, self.output_neurons)
 
-nn = neural_network()
-for i in range(0, 100):
-	nn.step([0.5])
+		return fired
+
+# nn = neural_network()
+# for i in range(0, 100):
+# 	nn.step([0.5, 0.5, 0.5, 0.5, 0.5])

@@ -1,4 +1,4 @@
-1.	Get them fireing:
-	- fire based on resting frequency.
-	- fire based on increased theshold.
-	- recieve fire.
+1. NN is working.
+2. Simulation for test environment is working.
+TO DO:
+	- Train the network!!!!

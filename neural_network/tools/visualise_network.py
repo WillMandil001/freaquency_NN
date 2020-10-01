@@ -48,13 +48,18 @@ def show_network_topology(inputs, standards, outputs):
 		output_y.append(neuron.pose[1])
 		output_z.append(neuron.pose[2])
 
+
+	# print(inputs[0].output_ids)
+	# print(standards[0].output_ids)
+	# print(outputs[0].output_ids)
+
 	for input_neuron in inputs:
-		for id_ in input_neuron.input_ids:
-			c = "k"
-			if input_neuron.fired == True:
-				c = "r"
+		for id_ in input_neuron.output_ids:
 			for standard_neuron in standards:
 				if id_ == standard_neuron.id:
+					c = "k"
+					if id_ in input_neuron.fired_to_ids:
+						c = "r"
 					a = Arrow3D([input_neuron.pose[0], standard_neuron.pose[0]],
 								[input_neuron.pose[1], standard_neuron.pose[1]],
 								[input_neuron.pose[2], standard_neuron.pose[2]],
@@ -62,30 +67,107 @@ def show_network_topology(inputs, standards, outputs):
 					ax.add_artist(a)
 
 	for standard_neuron in standards:
-		for id_ in standard_neuron.input_ids:
-			if id_ != []:
-				c = "k"
-				if id_[0] == "output":
-					if standard_neuron.fired == True:
+		for id_ in standard_neuron.output_ids:
+			for other_standard_neuron in standards:
+				if id_[1] == other_standard_neuron.id:
+					c = "k"
+					if id_[1] in standard_neuron.fired_to_ids:
 						c = "r"
-					for output_neuron in outputs:
-						if id_[1] == output_neuron.id:
-							a = Arrow3D([standard_neuron.pose[0], output_neuron.pose[0]],
-										[standard_neuron.pose[1], output_neuron.pose[1]],
-										[standard_neuron.pose[2], output_neuron.pose[2]],
-										mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
-							ax.add_artist(a)
+					a = Arrow3D([standard_neuron.pose[0], other_standard_neuron.pose[0]],
+								[standard_neuron.pose[1], other_standard_neuron.pose[1]],
+								[standard_neuron.pose[2], other_standard_neuron.pose[2]],
+								mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
+					ax.add_artist(a)
+			for output_neuron in outputs:
+				if id_[1] == output_neuron.id:
+					c = "k"
+					if id_[1] in standard_neuron.fired_to_ids:
+						c = "r"
+					a = Arrow3D([standard_neuron.pose[0], output_neuron.pose[0]],
+								[standard_neuron.pose[1], output_neuron.pose[1]],
+								[standard_neuron.pose[2], output_neuron.pose[2]],
+								mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
+					ax.add_artist(a)
 
-				if id_[0] == "standard":
-					if standard_neuron.fired == True:
-						c = "r"						
-					for other_standard_neuron in standards:
-						if id_[1] == other_standard_neuron.id:
-							a = Arrow3D([standard_neuron.pose[0], other_standard_neuron.pose[0]],
-										[standard_neuron.pose[1], other_standard_neuron.pose[1]],
-										[standard_neuron.pose[2], other_standard_neuron.pose[2]],
-										mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
-							ax.add_artist(a)
+
+
+	# for input_neuron in outputs:
+	# 	for id_ in output_neuron.output_ids:
+	# 		# c = "k"
+	# 		# if output_neuron.fired == True:
+	# 		# 	c = "r"
+	# 		for standard_neuron in standards:
+	# 			if id_ == standard_neuron.id:
+	# 				a = Arrow3D([standard_neuron.pose[0], output_neuron.pose[0]],
+	# 							[standard_neuron.pose[1], output_neuron.pose[1]],
+	# 							[standard_neuron.pose[2], output_neuron.pose[2]],
+	# 							mutation_scale=5, lw=0.5, arrowstyle="-|>", color="k")
+	# 				ax.add_artist(a)
+
+	# for standard_neuron in standards:
+	# 	for id_ in standard_neuron.input_ids:
+	# 		if id_ != []:
+	# 			c = "k"
+	# 			if id_[0] == "output":
+	# 				if standard_neuron.fired == True:
+	# 					c = "r"
+	# 				for output_neuron in outputs:
+	# 					if id_[1] == output_neuron.id:
+	# 						a = Arrow3D([standard_neuron.pose[0], output_neuron.pose[0]],
+	# 									[standard_neuron.pose[1], output_neuron.pose[1]],
+	# 									[standard_neuron.pose[2], output_neuron.pose[2]],
+	# 									mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
+	# 						ax.add_artist(a)
+
+	# 			if id_[0] == "standard":
+	# 				if standard_neuron.fired == True:
+	# 					c = "r"						
+	# 				for other_standard_neuron in standards:
+	# 					if id_[1] == other_standard_neuron.id:
+	# 						a = Arrow3D([standard_neuron.pose[0], other_standard_neuron.pose[0]],
+	# 									[standard_neuron.pose[1], other_standard_neuron.pose[1]],
+	# 									[standard_neuron.pose[2], other_standard_neuron.pose[2]],
+	# 									mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
+	# 						ax.add_artist(a)
+
+	# for input_neuron in inputs:
+	# 	for id_ in input_neuron.input_ids:
+	# 		c = "k"
+	# 		if input_neuron.fired == True:
+	# 			c = "r"
+	# 		for standard_neuron in standards:
+	# 			if id_ == standard_neuron.id:
+	# 				a = Arrow3D([input_neuron.pose[0], standard_neuron.pose[0]],
+	# 							[input_neuron.pose[1], standard_neuron.pose[1]],
+	# 							[input_neuron.pose[2], standard_neuron.pose[2]],
+	# 							mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
+	# 				ax.add_artist(a)
+
+	# for standard_neuron in standards:
+	# 	for id_ in standard_neuron.input_ids:
+	# 		if id_ != []:
+	# 			c = "k"
+	# 			if id_[0] == "output":
+	# 				if standard_neuron.fired == True:
+	# 					c = "r"
+	# 				for output_neuron in outputs:
+	# 					if id_[1] == output_neuron.id:
+	# 						a = Arrow3D([standard_neuron.pose[0], output_neuron.pose[0]],
+	# 									[standard_neuron.pose[1], output_neuron.pose[1]],
+	# 									[standard_neuron.pose[2], output_neuron.pose[2]],
+	# 									mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
+	# 						ax.add_artist(a)
+
+	# 			if id_[0] == "standard":
+	# 				if standard_neuron.fired == True:
+	# 					c = "r"						
+	# 				for other_standard_neuron in standards:
+	# 					if id_[1] == other_standard_neuron.id:
+	# 						a = Arrow3D([standard_neuron.pose[0], other_standard_neuron.pose[0]],
+	# 									[standard_neuron.pose[1], other_standard_neuron.pose[1]],
+	# 									[standard_neuron.pose[2], other_standard_neuron.pose[2]],
+	# 									mutation_scale=5, lw=0.5, arrowstyle="-|>", color=c)
+	# 						ax.add_artist(a)
 
 	ax.scatter(input_x, input_y, input_z, c="r")
 	ax.scatter(standard_x, standard_y, standard_z, c="g")

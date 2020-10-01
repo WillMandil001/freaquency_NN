@@ -3,18 +3,18 @@ import random
 ####################################################################
 class neuron():
 	def __init__(self, pose, id_):
-		self.input_weights = []
-		self.input_ids = []
-		self.resting_frequency = 0.2
+		# self.input_weights = []
+		# self.input_ids = []
+		self.output_ids = []
+		self.resting_frequency = 0.2  # 0.2
 		self.emition_threshold = 10
 		self.decay_rate = 0.025
 		self.pose = pose
 		self.id = id_
-		self.fired = False
 		self.current_state = 1.0
+		self.fired_to_ids = []
 
 	def update(self, standard_neurons, output_neurons):
-		self.fired = False
 		if random.uniform(0,self.current_state) < self.resting_frequency:
 			self.fire(standard_neurons, output_neurons)
 			self.value = 0
@@ -24,51 +24,84 @@ class neuron():
 		if self.current_state > 1.0:
 			self.current_state = 1.0
 
+	def fire(self, standard_neurons, output_neurons):
+		for output_id in self.output_ids:
+			for st_neuron in standard_neurons:
+				if output_id[1] == st_neuron.id and output_id[0] == "standard":
+					st_neuron.recieve_fire()
+					self.fired_to_ids.append(st_neuron.id)
+			for out_neuron in output_neurons:
+				if output_id[1] == out_neuron.id and output_id[0] == "output":
+					out_neuron.recieve_fire()
+					self.fired_to_ids.append(out_neuron.id)
+
 	def recieve_fire(self):
 		self.current_state -= 0.1
 		# print("standard neuron current_state == ", self.current_state)
 
-	def fire(self, standard_neurons, output_neurons):
-		self.fired = True
-		for neuron in standard_neurons:
-			for input_ids__ in neuron.input_ids:		 
-				if input_ids__[1] == self.id:
-					neuron.recieve_fire()
+	# def fire(self, standard_neurons, output_neurons):
+	# 	self.fired = True
+	# 	for neuron in standard_neurons:
+	# 		for input_ids__ in neuron.input_ids:		 
+	# 			if input_ids__[1] == self.id:
+	# 				neuron.recieve_fire()
 
-		for neuron in output_neurons:
-			for input_ids__ in neuron.input_ids:		 
-				if input_ids__[1] == self.id:
-					neuron.recieve_fire()
+
+	# def update(self, standard_neurons, output_neurons):
+	# 	self.fired = False
+	# 	if random.uniform(0,self.current_state) < self.resting_frequency:
+	# 		self.fire(standard_neurons, output_neurons)
+	# 		self.value = 0
+	# 		self.current_state = 1
+
+	# 	self.current_state += self.decay_rate
+	# 	if self.current_state > 1.0:
+	# 		self.current_state = 1.0
+
+	# def recieve_fire(self):
+	# 	self.current_state -= 0.1
+	# 	# print("standard neuron current_state == ", self.current_state)
+
+	# def fire(self, standard_neurons, output_neurons):
+	# 	self.fired = True
+	# 	for neuron in standard_neurons:
+	# 		for input_ids__ in neuron.input_ids:		 
+	# 			if input_ids__[1] == self.id:
+	# 				neuron.recieve_fire()
+
+	# 	for neuron in output_neurons:
+	# 		for input_ids__ in neuron.input_ids:		 
+	# 			if input_ids__[1] == self.id:
+	# 				neuron.recieve_fire()
 
 
 ####################################################################
 class input_neuron():
 	def __init__(self, pose, id_):
 		self.input_weights = []
-		self.input_ids = []
+		self.output_ids = []
 		self.emition_threshold = 10
 		self.pose = pose
 		self.id = id_
-		self.fired = False
+		self.fired_to_ids = []
 
 	def update(self, frequency, standard_neurons):
-		self.fired = False
+		self.fired_to_ids = []
 		if random.uniform(0,1) < frequency:
 			self.fire(standard_neurons)
 
 	def fire(self, standard_neurons):
-		self.fired = True
-		for neuron in standard_neurons:
-			for input_ids__ in neuron.input_ids:		 
-				# print(neuron.input_ids[0])
-				if input_ids__[1] == self.id:
-					neuron.recieve_fire()
+		for output_id in self.output_ids:
+			for st_neuron in standard_neurons:
+				if output_id == st_neuron.id:
+					st_neuron.recieve_fire()
+					self.fired_to_ids.append(st_neuron.id)
 
 ####################################################################
 class output_neuron():
 	def __init__(self, pose, id_):
 		self.input_weights = []
-		self.input_ids = []
+		self.output_ids = []
 		self.resting_frequency = 0.5
 		self.pose = pose
 		self.id = id_
@@ -94,4 +127,3 @@ class output_neuron():
 
 	def fire(self):
 		self.fired = True
-		# print("output neuron " + str(self.id) + " FIRED")
