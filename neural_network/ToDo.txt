@@ -2,3 +2,27 @@
 2. Simulation for test environment is working.
 TO DO:
 	- Train the network!!!!
+-------------------------------------------------------------------------------------------------------------------------------------------
+How to train?
+tunable parameters: 
+		- resting_frequency. (should this be constant?)
+		- recieve_fire transmition value (should this be constant?)
+		- decay_rate. (should this be constant?)
+		- current_state neuron fire threshold 
+		- neuron connections.
+		- neuron position.
+		- new neurons.
+
+
+How to train each parameter?
+Training procedure:
+	1. Run simulation for set time horrizon.
+	2. Observe successes and failure based on some fitness function of the neural network. (euclidean distance to goal)
+	3. Based on whole time event horrizon identify neurons involved in successful actions.
+	4. Maintain and/or increase strength of these identified successful neurons and reduce relevance of outside neurons (reduce connections, increase thresholds etc.)
+	5. add new connections trail connections in successful neurons to surrounding neurons.  
+	6. Remove redundant neurons and initialise additional neurons about places in the successful pipeline.
+
+1. Hebbian Learning. (if x fires just before y fires then strengthen connection, if y fires just before x fires then weaken connection)
+
+

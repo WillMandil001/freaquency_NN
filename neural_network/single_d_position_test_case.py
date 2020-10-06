@@ -21,6 +21,7 @@ class simulation():
 		grid[self.current_state] = "o"
 		grid[self.goal_state] = "x"
 		print(grid)
+		return grid
 
 	def move(self, outputs):
 		if outputs == [False, True]:
@@ -35,20 +36,3 @@ class simulation():
 	def calculate_inputs(self):
 		x = np.linspace(0, 1, self.right-self.left) 
 		return [x[self.current_state], x[self.goal_state]]
-
-####################################################################
-goal_state=5
-start_state=22
-
-nn = neural_network(2,10,2)
-
-simulation = simulation(goal_state=goal_state, start_state=start_state, left=0, right=25)
-simulation.visualise_current_state()
-
-####################################################################
-for i in range(0, 200):
-	inputs = simulation.calculate_inputs()
-	outputs = nn.step(inputs)
-	simulation.move(outputs)
-	simulation.visualise_current_state()
-

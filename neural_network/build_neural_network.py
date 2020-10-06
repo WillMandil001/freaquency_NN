@@ -156,7 +156,7 @@ class neural_network():
 					self.input_neurons.append(input_neuron([x, 0, z], id_))
 					break
 
-	def step(self, input_frequencies):
+	def step(self, input_frequencies, return_nn_states=False):
 		# 1. Check if each neuron needs to fire based on it's resting frequency
 		for index, input_neuron in enumerate(self.input_neurons):
 			input_neuron.update(input_frequencies[index], self.standard_neurons)
@@ -169,8 +169,10 @@ class neural_network():
 			fired[index] = output_neuron.update()
 
 		# show_network_topology(self.input_neurons, self.standard_neurons, self.output_neurons)
-
-		return fired
+		if return_nn_states == True:
+			return fired, [self.input_neurons, self.standard_neurons, self.output_neurons]
+		else:
+			return fired
 
 # nn = neural_network()
 # for i in range(0, 100):
