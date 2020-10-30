@@ -25,4 +25,5 @@ Training procedure:
 
 1. Hebbian Learning. (if x fires just before y fires then strengthen connection, if y fires just before x fires then weaken connection)
 
-
+PROBLEM:: 
+	

@@ -18,9 +18,11 @@ class simulation():
 	def visualise_current_state(self):
 		grid = []
 		[grid.append("_") for i in range(self.left, self.right)]
-		grid[self.current_state] = "o"
-		grid[self.goal_state] = "x"
-		print(grid)
+		if self.current_state == self.goal_state:
+			grid[self.current_state] = "8"	
+		else:
+			grid[self.current_state] = "o"
+			grid[self.goal_state] = "x"
 		return grid
 
 	def move(self, outputs):
@@ -34,5 +36,7 @@ class simulation():
 				self.current_state = self.left
 
 	def calculate_inputs(self):
-		x = np.linspace(0, 1, self.right-self.left) 
-		return [x[self.current_state], x[self.goal_state]]
+		x = [1.0 for i in range(self.left, self.right)]
+		x[self.start_state] = 0.0
+		x[self.goal_state] = 0.0
+		return x

@@ -73,12 +73,13 @@ class output_neuron():
 	def __init__(self, pose, id_):
 		self.input_weights = []
 		self.output_ids = []
-		self.resting_frequency = 0.5
+		self.resting_frequency = 0.1
 		self.pose = pose
 		self.id = id_
 		self.decay_rate = 0.025
 		self.current_state = 1.0
 		self.fired = False
+		self.transmition_value = 0.333
 
 	def update(self):
 		self.fired = False
@@ -94,4 +95,4 @@ class output_neuron():
 		return self.fired
 
 	def recieve_fire(self):
-		self.current_state -= 0.1
+		self.current_state -= self.transmition_value
