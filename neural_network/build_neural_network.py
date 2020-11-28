@@ -1,13 +1,13 @@
 from tools.visualise_network import show_network_topology
-from single_neuron import neuron, input_neuron, output_neuron
+from neurons.probabilistic_neuron import neuron, input_neuron, output_neuron
 
 import random
 import math
 
 class neural_network():
-	def __init__(self, in_ ,st_ ,out_):
+	def __init__(self, in_ ,st_ ,out_, log_history=False):
 		self.generate_hyper_parameters()
-		self.generate_network(in_ ,st_ ,out_)
+		self.generate_network(in_ ,st_ ,out_, log_history)
 		# self.create_simple_network()
 		self.generate_initial_connections()
 		# show_network_topology(self.input_neurons, self.standard_neurons, self.output_neurons)
@@ -89,12 +89,12 @@ class neural_network():
 		if connection_made == False:
 			self.input_neurons[input_neuron_index].output_ids.append(self.standard_neurons[min(range(len(distance_list)), key=distance_list.__getitem__)].id)
 
-	def generate_network(self, no_inputs, no_standards, no_outputs):
+	def generate_network(self, no_inputs, no_standards, no_outputs, log_history):
 		self.build_input_shape(no_inputs)
-		length_of_pipes = self.build_standard_shape(no_standards)
-		self.build_output_shape(no_outputs, length_of_pipes)
+		length_of_pipes = self.build_standard_shape(no_standards, log_history)
+		self.build_output_shape(no_outputs, length_of_pipes, log_history)
 
-	def build_output_shape(self, number_of_points, length_of_pipe):
+	def build_output_shape(self, number_of_points, length_of_pipe, log_history):
 		radius_of_output_pipe = int(number_of_points / 1.5)
 		min_start = 1
 		list_x = []
@@ -109,10 +109,10 @@ class neural_network():
 				if x not in list_x or y not in list_y:
 					list_x.append(x)
 					list_y.append(y)
-					self.output_neurons.append(output_neuron([x, (length_of_pipe + min_start), y], id_))
+					self.output_neurons.append(output_neuron([x, (length_of_pipe + min_start), y], id_, log_history))
 					break
 
-	def build_standard_shape(self, number_of_points):
+	def build_standard_shape(self, number_of_points, log_history):
 		min_start = 1
 		radius_of_standard_pipe = int(number_of_points / 4)
 		if radius_of_standard_pipe == 0:
@@ -135,7 +135,7 @@ class neural_network():
 					list_x.append(x)
 					list_y.append(y)
 					list_z.append(z)
-					self.standard_neurons.append(neuron([x, y, z], id_))
+					self.standard_neurons.append(neuron([x, y, z], id_, log_history))
 					break
 		return length_of_pipe + min_start
 

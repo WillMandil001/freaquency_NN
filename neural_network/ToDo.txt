@@ -2,6 +2,13 @@
 2. Simulation for test environment is working.
 TO DO:
 	- Train the network!!!!
+
+To Do:
+	- DONE tool to plot individual neurons current state -> as a frequency plot.
+	- Hebbian learning.
+	- hebbian learning with reinforcement.
+	- add in dynamic reinforcement.
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 How to train?
 tunable parameters: 
@@ -27,3 +34,11 @@ Training procedure:
 
 PROBLEM:: 
 	
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+How to set neuron structure up?
+
+neuron:
+	- volts.
+	- trigger threshold.
+	- 
