@@ -1,8 +1,9 @@
+import math
+import copy
+import random
+
 from tools.visualise_network import show_network_topology
 from neurons.probabilistic_neuron import neuron, input_neuron, output_neuron
-
-import random
-import math
 
 class neural_network():
 	def __init__(self, in_ ,st_ ,out_, log_history=False):
@@ -178,7 +179,7 @@ class neural_network():
 
 		# show_network_topology(self.input_neurons, self.standard_neurons, self.output_neurons)
 		if return_nn_states == True:
-			return fired, [self.input_neurons, self.standard_neurons, self.output_neurons]
+			return fired, [copy.deepcopy(self.input_neurons), copy.deepcopy(self.standard_neurons), copy.deepcopy(self.output_neurons)]
 		else:
 			return fired
 

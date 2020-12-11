@@ -22,58 +22,49 @@ class spiking_neural_network_RL_trainer():
 
 		self.simulation = simulation(goal_state=goal_state, start_state=start_state, left=self.left, right=self.right)  # init simulation
 
-		events, nn_structure = self.event_horrizon(horrizon=100)
-		[print(event) for event in events]
-		# show_neuron_spiking_plot(nn_structure[-1][2][1].current_state_histroy, nn_structure[-1][2][1].fired_history, nn_structure[-1][2][1].recieve_fired_history)
-		
+		events = self.event_horrizon(horrizon=100)
+		[print(event, i) for i, event in enumerate(events)]
+
 		# self.calc_successful_pipelines(events, nn_structure)
-		self.train_neural_network(events, nn_structure)
+		self.train_neural_network(events)
 
-	def train_neural_network(self, events, nn_structure):		
+	def train_neural_network(self, events):
 		correct_events = self.find_correct_steps(events)
-
-		print(len(nn_structure))
-
-		# for neurons in nn_structure:
-		# 	print(neurons[2][0].fired)
-		# 	print(neurons[2][1].fired)
-
-		# for i, event in enumerate(events):
-		# 	print("---------------------------------------")
-		# 	# print(len(nn_structure[i][2]))
-		# 	print(nn_structure[i][2][0].fired)
-		# 	print(nn_structure[i][2][1].fired)
-			# print(event)
-
-		# for event in correct_events:
-		# 	print(events[event-1])
-		# 	print(nn_structure[event][2][0].fired)
-		# 	print(nn_structure[event][2][1].fired)
-		# 	print(events[event])
 
 		if correct_events != None:
 			print("found good events to train")
 			print(correct_events)
-			# pipelines = self.find_correct_pipelines(correct_events, events, nn_structure)
+			pipelines = self.find_correct_pipelines(correct_events, events)
 
 		# self.hebbian_learn(correct_events, events, nn_structure)
 
-	def find_correct_pipelines(self, correct_events, events, nn_structure):
+	def find_correct_pipelines(self, correct_events, events):
 		'''
 		Finds the correct sequence of neurons firing that caused the correct ouput.
 		Hyper parameters are:
-			1. Time difference between n-1 firing and n firing. 
+			1. Time difference between n-1 firing and n firing.
+		pipeline is defined as a list of [prev_neuron_id, next_neuron_id] -- basically the connection that needs strengthening
 		'''
-		# show_neuron_spiking_plot(nn_structure[correct_events[0]][1][1].current_state_histroy, nn_structure[correct_events[0]][1][1].fired_history, nn_structure[correct_events[0]][1][1].recieve_fired_history)
-		# show_network_topology(nn_structure[correct_events[0]][0], nn_structure[correct_events[0]][1], nn_structure[correct_events[0]][2], image_time=1000)
-
-		print(len(correct_events))
 		for time_step in correct_events:
-			for neuron in nn_structure[time_step-1][2]:
-				print(neuron.fired)
-				# if neuron.fired == True:
-				# 	print(neuron.fired)
+			print("======================, ", time_step)
+			for neuron in self.nn_structure[time_step+1][2]:
+					if neuron.fired == True:
+						output_neuron_id = neuron.id
+						for index in range(time_step+1, -1, -1):
+							for st_neuron in self.nn_structure[index][1]:
+								for ids in st_neuron.output_ids:
+									if ids == output_neuron_id and st_neuron.fired == True:
+										### STRENGTHEN
+										st_neuron.strengthen_conenction(output_neuron_id)
 
+									### TO DO NEXT WILLOW:
+									''' You need to now loop through all the st_neuron -> st_neuron connections to see which ones to strengthen'''
+									''' ITS SOME TREE SHIT --- DO ON PAPER FIRST --- ACTUALLY FUN PROGRAMMING THING WOOOP'''
+
+							print(index)
+
+
+		# self.hebbian_learn(time_step+1)
 		return False
 
 	def hebbian_learn(self, correct_events, events, nn_structure):
@@ -152,20 +143,22 @@ class spiking_neural_network_RL_trainer():
 	def event_horrizon(self, horrizon):
 		events = []
 		output = []
-		nn_structure = []
+		self.nn_structure = []
+		self.output_list = []
 		for i in range(0, horrizon):
-			event, nn_output, nn = self.run_loop()
+			event, nn_output = self.run_loop()
 			events.append(event)
 			output.append(nn_output)
-			nn_structure.append(nn)
-		return events, nn_structure
+		return events
 
 	def run_loop(self):
 		events = []
 		inputs = self.simulation.calculate_inputs()
 		outputs, network = self.neural_network.step(inputs, return_nn_states=True)
+		self.output_list.append(outputs)
 		self.simulation.move(outputs)
-		return self.simulation.visualise_current_state(), outputs, network
+		self.nn_structure.append(network)
+		return self.simulation.visualise_current_state(), outputs
 
 nn = neural_network(25,50,2, log_history=True)  # init neural network
 trainer = spiking_neural_network_RL_trainer(nn, 0, 25)  # init training system

@@ -7,6 +7,7 @@ class neuron():
 		# self.input_weights = []
 		# self.input_ids = []
 		self.output_ids = []
+		self.recieved_fire_from = []
 		self.output_transmition_values = []  # conneciton strengths
 		self.resting_frequency = 0.2  # 0.2
 		self.emition_threshold = 10
@@ -25,15 +26,16 @@ class neuron():
 			self.fired_history = []
 			self.log_neurons_history()
 
-	def strengthen_conenction(output_id):
+	def strengthen_conenction(self, output_id):
 		self.output_transmition_values[output_id] += 0.1
 
-	def weaken_connection():
+	def weaken_connection(self, output_id):
 		self.output_transmition_values[output_id] -= 0.1
 
 	def update(self, standard_neurons, output_neurons):
 		self.fired = False
 		self.fired_to_ids = []
+		self.recieved_fire_from = []
 
 		if random.uniform(0,self.current_state) < self.resting_frequency:
 			self.fire(standard_neurons, output_neurons)
@@ -53,16 +55,17 @@ class neuron():
 		for index, output_id in enumerate(self.output_ids):
 			for st_neuron in standard_neurons:
 				if output_id[1] == st_neuron.id and output_id[0] == "standard":
-					st_neuron.recieve_fire(self.output_transmition_values[index])
+					st_neuron.recieve_fire(self.output_transmition_values[index], self.id)
 					self.fired_to_ids.append(st_neuron.id)
 			for out_neuron in output_neurons:
 				if output_id[1] == out_neuron.id and output_id[0] == "output":
-					out_neuron.recieve_fire(self.output_transmition_values[index])
+					out_neuron.recieve_fire(self.output_transmition_values[index], self.id)
 					self.fired_to_ids.append(out_neuron.id)
 
-	def recieve_fire(self, transmition_value):
+	def recieve_fire(self, transmition_value, input_id):
 		self.recieved_fire += 1
 		self.current_state -= transmition_value
+		self.recieved_fire_from.append(input_id)
 
 	def log_neurons_history(self):
 		self.current_state_histroy.append(self.current_state)
@@ -100,8 +103,9 @@ class input_neuron():
 ####################################################################
 class output_neuron():
 	def __init__(self, pose, id_, log_history=False):
-		self.input_weights = []
 		self.output_ids = []
+		self.input_weights = []
+		self.recieved_fire_from = []
 		self.resting_frequency = 0.001
 		self.pose = pose
 		self.id = id_
@@ -117,10 +121,10 @@ class output_neuron():
 			self.fired_history = []
 			self.log_neurons_history()
 
-
 	def update(self):
 		self.fired = False
-		if random.uniform(0,self.current_state) < self.resting_frequency:
+		self.recieved_fire_from = []
+		if random.uniform(0, self.current_state) < self.resting_frequency:
 			self.fired = True
 			self.value = 0
 			self.current_state = 1
@@ -135,9 +139,10 @@ class output_neuron():
 
 		return self.fired
 
-	def recieve_fire(self, transmition_value):
+	def recieve_fire(self, transmition_value, input_id):
 		self.current_state -= transmition_value
 		self.recieved_fire += 1
+		self.recieved_fire_from.append(input_id)
 
 	def log_neurons_history(self):
 		self.current_state_histroy.append(self.current_state)
