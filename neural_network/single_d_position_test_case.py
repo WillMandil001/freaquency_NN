@@ -36,7 +36,7 @@ class simulation():
 				self.current_state = self.left
 
 	def calculate_inputs(self):
-		x = [1.0 for i in range(self.left, self.right)]
-		x[self.start_state] = 0.0
-		x[self.goal_state] = 0.0
+		x = [0.0 for i in range(self.left, self.right)]
+		x[self.start_state] = 1.0
+		x[self.goal_state] = 1.0
 		return x

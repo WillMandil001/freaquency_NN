@@ -4,6 +4,7 @@ import numpy as np
 
 from build_neural_network import neural_network
 from tools.visualise_neuron import show_neuron_spiking_plot
+from tools.visualise_network import show_network_topology
 from single_d_position_test_case import simulation
 
 class spiking_neural_network_RL_trainer():
@@ -22,57 +23,103 @@ class spiking_neural_network_RL_trainer():
 		self.simulation = simulation(goal_state=goal_state, start_state=start_state, left=self.left, right=self.right)  # init simulation
 
 		events, nn_structure = self.event_horrizon(horrizon=100)
-		# show_neuron_spiking_plot(nn_structure[-1][1][1].current_state_histroy, nn_structure[-1][1][1].fired_history, nn_structure[-1][1][1].recieve_fired_history)
-		
 		[print(event) for event in events]
-		self.calc_successful_pipelines(events, nn_structure)
-
-	def calc_successful_pipelines(self, events, nn_structure):
-		fitness = self.calc_fitness(events)
-		# last_success = len(fitness) - fitness[::-1].index(1) - 1  # only last time it happened
-
-		# pipeline = self.calc_pipeline(events, last_success)
-		# print("THIS IS THE PIPELINE")
-
-	def calc_pipeline(self):
+		# show_neuron_spiking_plot(nn_structure[-1][2][1].current_state_histroy, nn_structure[-1][2][1].fired_history, nn_structure[-1][2][1].recieve_fired_history)
 		
+		# self.calc_successful_pipelines(events, nn_structure)
+		self.train_neural_network(events, nn_structure)
 
-		return pipeline
+	def train_neural_network(self, events, nn_structure):		
+		correct_events = self.find_correct_steps(events)
 
-	def calc_fitness(self, events):
+		print(len(nn_structure))
+
+		# for neurons in nn_structure:
+		# 	print(neurons[2][0].fired)
+		# 	print(neurons[2][1].fired)
+
+		# for i, event in enumerate(events):
+		# 	print("---------------------------------------")
+		# 	# print(len(nn_structure[i][2]))
+		# 	print(nn_structure[i][2][0].fired)
+		# 	print(nn_structure[i][2][1].fired)
+			# print(event)
+
+		# for event in correct_events:
+		# 	print(events[event-1])
+		# 	print(nn_structure[event][2][0].fired)
+		# 	print(nn_structure[event][2][1].fired)
+		# 	print(events[event])
+
+		if correct_events != None:
+			print("found good events to train")
+			print(correct_events)
+			# pipelines = self.find_correct_pipelines(correct_events, events, nn_structure)
+
+		# self.hebbian_learn(correct_events, events, nn_structure)
+
+	def find_correct_pipelines(self, correct_events, events, nn_structure):
 		'''
-		1. find the last time the output was correct.
-		2. for the correct fired output neuron loop through the neurons connected to it.
-			3. if one of those neurons fired at previous timestep. increase strength of connection.
-				4. loop through that neurons input connections at time t-2 so on and so on.
+		Finds the correct sequence of neurons firing that caused the correct ouput.
+		Hyper parameters are:
+			1. Time difference between n-1 firing and n firing. 
 		'''
+		# show_neuron_spiking_plot(nn_structure[correct_events[0]][1][1].current_state_histroy, nn_structure[correct_events[0]][1][1].fired_history, nn_structure[correct_events[0]][1][1].recieve_fired_history)
+		# show_network_topology(nn_structure[correct_events[0]][0], nn_structure[correct_events[0]][1], nn_structure[correct_events[0]][2], image_time=1000)
 
+		print(len(correct_events))
+		for time_step in correct_events:
+			for neuron in nn_structure[time_step-1][2]:
+				print(neuron.fired)
+				# if neuron.fired == True:
+				# 	print(neuron.fired)
+
+		return False
+
+	def hebbian_learn(self, correct_events, events, nn_structure):
+		'''
+		For each succesful neural network output, adjust the parameters of each neuron according to the hebbian principle. 
+		Inputs: correct events = list of the timesteps in the last sample that had correct outputs.
+				nn_structure = the neural network at each time step.
+		For each time step we locat the string of succesful neuron paths.
+		for each string:
+				adjust neuron parameters:
+					1. connection strength.
+					
+		'''
+		print(nn_structure[-1][1][1].output_transmition_values)
+		print(nn_structure[-1][1][1].output_ids)
+
+
+		for event in correct_events:
+			pass
+
+	def find_correct_steps(self, events):
+		'''
+		This function loops through the events from a sample and finds cases where the output neurons fired correctly.
+		It returns these timesteps. 
+		'''
 		fitness = [0 for i in range(0, len(events))]
-		
-		good_event = []
-		previous_dist = 0
-		for i in range(len(events)-2, 1, -1):
-			# find distance from o to x at each time step.
-			if "8" in events[i] and "o" in events[i+1]:
-				print("here")
-				good_event.append(i)
 
-			if "o" in events[i]:
+		correct_events = []
+		previous_dist = 0
+		for i in range(1, len(events)):
+			# find distance from o to x at each time step.
+			if "8" in events[i] and "o" in events[i-1]:
+				correct_events.append(i-1)
+
+			elif "o" in events[i] and "o" in events[i-1]:
 				state = events[i].index("o")
 				goal = events[i].index("x")
 				distance__ = np.sqrt(np.sum((state - goal) ** 2))
-				previous_dist = np.sqrt(np.sum((events[i+1].index("o") - events[i+1].index("x")) ** 2))
+				previous_dist = np.sqrt(np.sum((events[i-1].index("o") - events[i-1].index("x")) ** 2))
 				if previous_dist > distance__:
-					good_event.append(i)
+					correct_events.append(i-1)
 
-		for i in good_event:
-			#### do reinforcment learning
-			self.hebbian_learn(event[i])
-			print("Found a good sample for training || trigger hebbian")
-			print(events[i+1])
-			print(events[i])
+		return correct_events
 
-
+	def calc_fitness(self, events):
+		fitness = [0 for i in range(0, len(events))]
 		# for i in range(1, len(events)):
 		# 	if "8" in events[i]:
 		# 		current_state = events[i].index("8")  # calc dist to goal
@@ -101,10 +148,6 @@ class spiking_neural_network_RL_trainer():
 		# 	if current_dist < previous_dist:
 		# 		fitness[i] = 1
 		return fitness
-
-	def hebbian_learn(self):
-		pass
-
 
 	def event_horrizon(self, horrizon):
 		events = []

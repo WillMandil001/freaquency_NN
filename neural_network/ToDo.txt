@@ -2,9 +2,11 @@
 2. Simulation for test environment is working.
 TO DO:
 	- Train the network!!!!
+PROBLEM:::::: False False neuron output called as successful and I'm not sure why...
 
 To Do:
 	- DONE tool to plot individual neurons current state -> as a frequency plot.
+	- Have to convert neurons to run with their own unique connections
 	- Hebbian learning.
 	- hebbian learning with reinforcement.
 	- add in dynamic reinforcement.

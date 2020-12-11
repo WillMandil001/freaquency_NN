@@ -44,6 +44,9 @@ class neural_network():
 			min_st = min(range(len(distance_list_st)), key=distance_list_st.__getitem__)
 			self.input_neurons[input_neuron_index].output_ids.append(self.standard_neurons[min_st].id)	
 
+		for id___ in self.input_neurons[input_neuron_index].output_ids:
+			self.input_neurons[input_neuron_index].output_transmition_values.append(self.input_neurons[input_neuron_index].starting_transmition_value)
+
 	def generate_standard_connection(self, standard_neuron_index):
 		list_of_neurons_in_range = []
 		pose = self.standard_neurons[standard_neuron_index].pose
@@ -73,6 +76,11 @@ class neural_network():
 				self.standard_neurons[standard_neuron_index].output_ids.append(["standard", self.standard_neurons[min_st].id])	
 			else:
 				self.standard_neurons[standard_neuron_index].output_ids.append(["output", self.output_neurons[min_out].id])	
+
+		### generate individual conection strengths:
+		for id___ in self.standard_neurons[standard_neuron_index].output_ids:
+			self.standard_neurons[standard_neuron_index].output_transmition_values.append(self.standard_neurons[standard_neuron_index].starting_transmition_value)		
+
 
 	def generate_output_connection(self, input_neuron_index):
 		list_of_neurons_in_range = []
