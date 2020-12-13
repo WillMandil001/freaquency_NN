@@ -34,7 +34,7 @@ class spiking_neural_network_RL_trainer():
 		if correct_events != None:
 			print("found good events to train")
 			print(correct_events)
-			pipelines = self.find_correct_pipelines(correct_events, events)
+			self.find_correct_pipelines(correct_events, events)
 
 		# self.hebbian_learn(correct_events, events, nn_structure)
 
@@ -45,27 +45,40 @@ class spiking_neural_network_RL_trainer():
 			1. Time difference between n-1 firing and n firing.
 		pipeline is defined as a list of [prev_neuron_id, next_neuron_id] -- basically the connection that needs strengthening
 		'''
+		pipeline_st = []
+		pipeline_st_holder = []
+		pipeline_in = []
+		pipeline_in_holder = []
 		for time_step in correct_events:
 			print("======================, ", time_step)
-			for neuron in self.nn_structure[time_step+1][2]:
-					if neuron.fired == True:
-						output_neuron_id = neuron.id
-						for index in range(time_step+1, -1, -1):
-							for st_neuron in self.nn_structure[index][1]:
-								for ids in st_neuron.output_ids:
-									if ids == output_neuron_id and st_neuron.fired == True:
-										### STRENGTHEN
-										st_neuron.strengthen_conenction(output_neuron_id)
+			for t in range(time_step+1, -1, -1):
+				if t == time_step+1:
+					### output neuron stage:
+					for out_neuron in self.nn_structure[t][2]:
+						if out_neuron.fired == True:
+							for st_neuron in self.nn_structure[t-1][1]:
+								print(st_neuron.output_ids, st_neuron.fired, ["output", out_neuron.id])
+								if st_neuron.fired == True and ["output", out_neuron.id] in st_neuron.output_ids:
+									st_neuron.strengthen_conenction(["output", out_neuron.id])
+									pipeline_st_holder.append(st_neuron.id)
+									print("strengthened connection")
+				else:
+					if pipeline_st != []:
+						for nn_id in pipeline_st:
+							for neuron in self.nn_structure[t][1]:  # st neuron
+								if neuron.id == nn_id:
+									### hebbian learn on this neuron and add to pipeline:
+									for st_neuron in self.nn_structure[t-1][1]:
+										if st_neuron.fired == True and ["standard", neuron.id] in neuron.output_ids:
+											st_neuron.strengthen_conenction(["standard", neuron.id])
+											pipeline_st_holder.append(st_neuron.id)
+											print("strengthened connection")
+									for in_neuron in self.nn_structure[t-1][0]:
+										if in_neuron.fired == True and neuron.id in neuron.output_ids:
+											in_neuron.strengthen_conenction(neuron.id)
+											print("strengthened input connection")
 
-									### TO DO NEXT WILLOW:
-									''' You need to now loop through all the st_neuron -> st_neuron connections to see which ones to strengthen'''
-									''' ITS SOME TREE SHIT --- DO ON PAPER FIRST --- ACTUALLY FUN PROGRAMMING THING WOOOP'''
-
-							print(index)
-
-
-		# self.hebbian_learn(time_step+1)
-		return False
+				pipeline_st = pipeline_st_holder
 
 	def hebbian_learn(self, correct_events, events, nn_structure):
 		'''
@@ -76,7 +89,6 @@ class spiking_neural_network_RL_trainer():
 		for each string:
 				adjust neuron parameters:
 					1. connection strength.
-					
 		'''
 		print(nn_structure[-1][1][1].output_transmition_values)
 		print(nn_structure[-1][1][1].output_ids)

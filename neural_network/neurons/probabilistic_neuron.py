@@ -27,10 +27,10 @@ class neuron():
 			self.log_neurons_history()
 
 	def strengthen_conenction(self, output_id):
-		self.output_transmition_values[output_id] += 0.1
+		self.output_transmition_values[self.output_ids.index(output_id)] += 0.1
 
 	def weaken_connection(self, output_id):
-		self.output_transmition_values[output_id] -= 0.1
+		self.output_transmition_values[self.output_ids.index(output_id)] -= 0.1
 
 	def update(self, standard_neurons, output_neurons):
 		self.fired = False
@@ -86,6 +86,12 @@ class input_neuron():
 		self.fired_to_ids = []
 		self.fired = False
 
+	def strengthen_conenction(self, output_id):
+		self.output_transmition_values[self.output_ids.index(output_id)] += 0.1
+
+	def weaken_connection(self, output_id):
+		self.output_transmition_values[self.output_ids.index(output_id)] -= 0.1
+
 	def update(self, frequency, standard_neurons):
 		self.fired = False
 		self.fired_to_ids = []
@@ -97,7 +103,7 @@ class input_neuron():
 		for index, output_id in enumerate(self.output_ids):
 			for st_neuron in standard_neurons:
 				if output_id == st_neuron.id:
-					st_neuron.recieve_fire(self.output_transmition_values[index])
+					st_neuron.recieve_fire(self.output_transmition_values[index], self.id)
 					self.fired_to_ids.append(st_neuron.id)
 
 ####################################################################
