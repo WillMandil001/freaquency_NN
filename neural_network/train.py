@@ -57,45 +57,62 @@ class spiking_neural_network_RL_trainer():
 					for out_neuron in self.nn_structure[t][2]:
 						if out_neuron.fired == True:
 							for st_neuron in self.nn_structure[t-1][1]:
-								print(st_neuron.output_ids, st_neuron.fired, ["output", out_neuron.id])
 								if st_neuron.fired == True and ["output", out_neuron.id] in st_neuron.output_ids:
-									st_neuron.strengthen_conenction(["output", out_neuron.id])
+									print("11111")
+									self.hebbian_learn(st_neuron, ["output", out_neuron.id], strengthen=True)
 									pipeline_st_holder.append(st_neuron.id)
-									print("strengthened connection")
 				else:
 					if pipeline_st != []:
 						for nn_id in pipeline_st:
 							for neuron in self.nn_structure[t][1]:  # st neuron
 								if neuron.id == nn_id:
+									### FOR STRENGTHENING
 									### hebbian learn on this neuron and add to pipeline:
 									for st_neuron in self.nn_structure[t-1][1]:
-										if st_neuron.fired == True and ["standard", neuron.id] in neuron.output_ids:
-											st_neuron.strengthen_conenction(["standard", neuron.id])
+										if st_neuron.fired == True and ["standard", neuron.id] in st_neuron.output_ids:
+											print("121212121")
+											self.hebbian_learn(st_neuron, ["standard", neuron.id], strengthen=True)
 											pipeline_st_holder.append(st_neuron.id)
-											print("strengthened connection")
 									for in_neuron in self.nn_structure[t-1][0]:
-										if in_neuron.fired == True and neuron.id in neuron.output_ids:
-											in_neuron.strengthen_conenction(neuron.id)
-											print("strengthened input connection")
+										if in_neuron.fired == True and neuron.id in in_neuron.output_ids:
+											print("22222222")
+											self.hebbian_learn(in_neuron, ["standard", neuron.id], strengthen=True)
+									### FOR WEAKENING
+									### hebbian learn on this neuron and add to pipeline:
+									for st_neuron in self.nn_structure[t+1][1]:
+										if st_neuron.fired == True and ["standard", neuron.id] in st_neuron.output_ids:
+											print("33333333")
+											self.hebbian_learn(st_neuron, ["standard", neuron.id], strengthen=False)
+											pipeline_st_holder.append(st_neuron.id)
+									for in_neuron in self.nn_structure[t+1][0]:
+										if in_neuron.fired == True and neuron.id in in_neuron.output_ids:
+											print("44444444")
+											self.hebbian_learn(in_neuron, ["standard", neuron.id], strengthen=False)
 
 				pipeline_st = pipeline_st_holder
+	#
+	# for neuron in self.nn_structure[t][1]:
+	# 	for id__ in neuron.output_ids:
+	# 		if id__[1] == neuron.id:
+	# 			print(neuron.id, neuron.output_ids)
 
-	def hebbian_learn(self, correct_events, events, nn_structure):
+	def hebbian_learn(self, neuron, connection_neuron, strengthen):
 		'''
 		For each succesful neural network output, adjust the parameters of each neuron according to the hebbian principle. 
-		Inputs: correct events = list of the timesteps in the last sample that had correct outputs.
-				nn_structure = the neural network at each time step.
+		Inputs: neuron = the neuron whos connection needs strengthening.
+				connection_neuron = the neuron that "neuron" has connection to. 
 		For each time step we locat the string of succesful neuron paths.
 		for each string:
 				adjust neuron parameters:
 					1. connection strength.
 		'''
-		print(nn_structure[-1][1][1].output_transmition_values)
-		print(nn_structure[-1][1][1].output_ids)
+		if strengthen == True:
+			neuron.strengthen_conenction(connection_neuron)
+			# print("strengthened input connection")
+		else:
+			neuron.weaken_connection(connection_neuron)
+			print("weakend input connection")
 
-
-		for event in correct_events:
-			pass
 
 	def find_correct_steps(self, events):
 		'''
@@ -174,4 +191,3 @@ class spiking_neural_network_RL_trainer():
 
 nn = neural_network(25,50,2, log_history=True)  # init neural network
 trainer = spiking_neural_network_RL_trainer(nn, 0, 25)  # init training system
-

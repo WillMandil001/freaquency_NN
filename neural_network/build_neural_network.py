@@ -59,9 +59,10 @@ class neural_network():
 			distance = math.sqrt((st_n.pose[0] - pose[0])**2 + (st_n.pose[1] - pose[1])**2 + (st_n.pose[2] - pose[2])**2)
 			distance_list_st.append(["s", distance])
 			if distance < self.neuron_range:
-				if random.uniform(0,1) > 0.85:
-					self.standard_neurons[standard_neuron_index].output_ids.append(["standard", st_n.id])
-					connection_made = True
+				if st_n.id != self.standard_neurons[standard_neuron_index].id:
+					if random.uniform(0,1) > 0.85:
+						self.standard_neurons[standard_neuron_index].output_ids.append(["standard", st_n.id])
+						connection_made = True
 		for out_n in self.output_neurons:
 			distance = math.sqrt((out_n.pose[0] - pose[0])**2 + (out_n.pose[1] - pose[1])**2 + (out_n.pose[2] - pose[2])**2)
 			distance_list_out.append(["o", distance])
@@ -81,7 +82,6 @@ class neural_network():
 		### generate individual conection strengths:
 		for id___ in self.standard_neurons[standard_neuron_index].output_ids:
 			self.standard_neurons[standard_neuron_index].output_transmition_values.append(self.standard_neurons[standard_neuron_index].starting_transmition_value)		
-
 
 	def generate_output_connection(self, input_neuron_index):
 		list_of_neurons_in_range = []
