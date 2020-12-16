@@ -17,7 +17,7 @@ class simulation():
 
 	def visualise_current_state(self):
 		grid = []
-		[grid.append("_") for i in range(self.left, self.right)]
+		[grid.append("_") for i in range(self.left, self.right+1)]
 		if self.current_state == self.goal_state:
 			grid[self.current_state] = "8"	
 		else:
@@ -36,7 +36,7 @@ class simulation():
 				self.current_state = self.left
 
 	def calculate_inputs(self):
-		x = [0.0 for i in range(self.left, self.right)]
+		x = [0.0 for i in range(self.left, self.right+1)]
 		x[self.start_state] = 1.0
 		x[self.goal_state] = 1.0
 		return x

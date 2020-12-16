@@ -35,13 +35,14 @@ class neural_network():
 		connection_made = False
 		for st_n in self.standard_neurons:
 			distance = math.sqrt((st_n.pose[0] - pose[0])**2 + (st_n.pose[1] - pose[1])**2 + (st_n.pose[2] - pose[2])**2)
-			distance_list_st.append(["s", distance])
+			distance_list_st.append(distance)
 			if distance < self.neuron_range:
 				if random.uniform(0,1) > 0.85:
 					self.input_neurons[input_neuron_index].output_ids.append(st_n.id)
 					connection_made = True
 
 		if connection_made == False:  # if no connection made
+			distance_list_st[distance_list_st.index(min(distance_list_st))] = 100000
 			min_st = min(range(len(distance_list_st)), key=distance_list_st.__getitem__)
 			self.input_neurons[input_neuron_index].output_ids.append(self.standard_neurons[min_st].id)	
 
@@ -57,7 +58,7 @@ class neural_network():
 		# for other standard neurons:
 		for st_n in self.standard_neurons:
 			distance = math.sqrt((st_n.pose[0] - pose[0])**2 + (st_n.pose[1] - pose[1])**2 + (st_n.pose[2] - pose[2])**2)
-			distance_list_st.append(["s", distance])
+			distance_list_st.append(distance)
 			if distance < self.neuron_range:
 				if st_n.id != self.standard_neurons[standard_neuron_index].id:
 					if random.uniform(0,1) > 0.85:
@@ -65,13 +66,14 @@ class neural_network():
 						connection_made = True
 		for out_n in self.output_neurons:
 			distance = math.sqrt((out_n.pose[0] - pose[0])**2 + (out_n.pose[1] - pose[1])**2 + (out_n.pose[2] - pose[2])**2)
-			distance_list_out.append(["o", distance])
+			distance_list_out.append(distance)
 			if distance < self.neuron_range:
 				if random.uniform(0,1) > 0.1:
 					self.standard_neurons[standard_neuron_index].output_ids.append(["output", out_n.id])
 					connection_made = True
 
 		if connection_made == False:
+			distance_list_st[distance_list_st.index(min(distance_list_st))] = 100000
 			min_out = min(range(len(distance_list_out)), key=distance_list_out.__getitem__)
 			min_st = min(range(len(distance_list_st)), key=distance_list_st.__getitem__)
 			if  min_out >= min_st:

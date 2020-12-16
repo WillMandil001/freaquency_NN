@@ -1,8 +1,7 @@
 1. NN is working.
 2. Simulation for test environment is working.
 TO DO:
-	- Train the network!!!!
-	- Neurons are connecting to themselves...
+    - double check that hebbian learning is working properly...
 To Do:
 	- DONE tool to plot individual neurons current state -> as a frequency plot.
 	- Have to convert neurons to run with their own unique connections
@@ -34,7 +33,7 @@ Training procedure:
 1. Hebbian Learning. (if x fires just before y fires then strengthen connection, if y fires just before x fires then weaken connection)
 
 PROBLEM:: 
-	
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------
 How to set neuron structure up?
