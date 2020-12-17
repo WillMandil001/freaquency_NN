@@ -21,8 +21,12 @@ class spiking_neural_network_RL_trainer():
 
 		# for i in tqdm(range(0, 50)):
 		for i in range(0, 1000):
+			self.correct_pipelines_length = []
 			model_fitness.append(self.test_current_network_fitness(num_of_tests=10))
-			print("epoch:", i, "fitness: ", model_fitness[-1])
+			if self.correct_pipelines_length:
+				print("epoch:", i, "fitness: ", model_fitness[-1], "number pipelines: ", len(self.correct_pipelines_length), " mean pipeline length, ", sum(self.correct_pipelines_length) / len(self.correct_pipelines_length))
+			else:
+				print("epoch:", i, "fitness: ", model_fitness[-1])
 			self.train()
 
 		model_fitness.append(self.test_current_network_fitness(num_of_tests=10))
@@ -131,6 +135,7 @@ class spiking_neural_network_RL_trainer():
 		pipeline_in = []
 		pipeline_in_holder = []
 		for time_step in correct_events:
+			self.correct_pipelines_length.append(0)
 			# print("======================, ", time_step)
 			for t in range(time_step + 1, -1, -1):
 				if t == time_step + 1:
@@ -176,6 +181,7 @@ class spiking_neural_network_RL_trainer():
 					1. connection strength.
 		'''
 		if strengthen == True:
+			self.correct_pipelines_length[-1] += 1
 			neuron.strengthen_conenction(connection_neuron)
 			neuron.trained = True
 		# print("strengthened input connection", neuron.id, t)

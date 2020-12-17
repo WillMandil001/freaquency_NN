@@ -111,6 +111,7 @@ class input_neuron():
 					st_neuron.recieve_fire(self.output_transmition_values[index], self.id)
 					self.fired_to_ids.append(st_neuron.id)
 
+
 ####################################################################
 class output_neuron():
 	def __init__(self, pose, id_, log_history=False):
