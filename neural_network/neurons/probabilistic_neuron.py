@@ -11,7 +11,6 @@ class neuron():
 		self.recieved_fire_from = []
 		self.output_transmition_values = []  # conneciton strengths
 		self.resting_frequency = 0.1  # 0.2
-		self.emition_threshold = 10
 		self.decay_rate = 0.1 # 0.025
 		self.starting_transmition_value = 0.1
 		self.pose = pose

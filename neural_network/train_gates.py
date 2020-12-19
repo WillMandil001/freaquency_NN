@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from build_neural_network import neural_network
-from passthrough_test.py import passthrough_test
+from gates.passthrough_test import passthrough_test
 from tools.visualise_neuron import show_neuron_spiking_plot
 from tools.visualise_network import show_network_topology
 
@@ -15,28 +15,17 @@ class spiking_neural_network_RL_trainer():
 		self.left = left
 		self.right = right
 		self.neural_network = neural_network
-		model_fitness = []
+		# model_fitness = []
 		graph, = plt.plot([], [], 'o')
 
-		# for i in tqdm(range(0, 50)):
 		for i in range(0, 1000):
-			self.correct_pipelines_length = []
-			model_fitness.append(self.test_current_network_fitness(num_of_tests=10))
-			if self.correct_pipelines_length:
-				print("epoch:", i, "fitness: ", model_fitness[-1], "number pipelines: ", len(self.correct_pipelines_length), " mean pipeline length, ", sum(self.correct_pipelines_length) / len(self.correct_pipelines_length))
-			else:
-				print("epoch:", i, "fitness: ", model_fitness[-1])
+			print("epoch:", i, " Fitness = ", sum(self.fitnesses))
 			self.train()
-
-		model_fitness.append(self.test_current_network_fitness(num_of_tests=10))
-
-		print(model_fitness)
 
 		epoch = [i for i in range(0, len(model_fitness))]
 		plt.plot(epoch, model_fitness, 'o')
 		plt.plot(np.unique(epoch), np.poly1d(np.polyfit(epoch, model_fitness, 1))(np.unique(epoch)))
 		plt.show()
-
 
 	def log_history(self, yesno):
 		if yesno:
@@ -64,29 +53,20 @@ class spiking_neural_network_RL_trainer():
 				neuron.recieve_fired_history = []
 
 	def train(self):
-		start_state = random.randint(self.left, self.right)  # random start state.
-		goal_state = random.randint(self.left, self.right)  # random goal state.
-		while start_state == goal_state:
-			goal_state = random.randint(self.left, self.right)  # change goal state if its the same as the start state.
-
 		self.log_history(True)
 		self.passthrough_test = passthrough_test()  # init simulation
-
-		events = self.event_horrizon(horrizon=20)
-		# [print(event, i) for i, event in enumerate(events)]
-
-		# self.calc_successful_pipelines(events, nn_structure)
-		self.train_neural_network(events)
-
+		self.event_horrizon(horrizon=100)  # run the simulation for 100 timesteps and return fitness of model at each time_step
+		self.train_neural_network(self.fitnesses)
 		self.log_history(False)
 
-	def train_neural_network(self, events):
-		correct_events = self.find_correct_steps(events)
-		if correct_events != None:
-			self.find_correct_pipelines(correct_events, events)
+	def train_neural_network(self, fitnesses):
+		if fitnesses != None:
+			pipelines = self.passthrough_test.find_correct_pipelines(fitnesses, self.nn_structure)
 
+		for neuron_to_train in pipelines:
+			self.hebbian_learn(neuron_to_train)
 
-	def hebbian_learn(self, neuron, connection_neuron, t, strengthen):
+	def hebbian_learn(self, neuron_to_train):
 		'''
 		For each succesful neural network output, adjust the parameters of each neuron according to the hebbian principle. 
 		Inputs: neuron = the neuron whos connection needs strengthening.
@@ -96,38 +76,50 @@ class spiking_neural_network_RL_trainer():
 				adjust neuron parameters:
 					1. connection strength.
 		'''
-		if strengthen == True:
-			self.correct_pipelines_length[-1] += 1
-			neuron.strengthen_conenction(connection_neuron)
-			neuron.trained = True
-		# print("strengthened input connection", neuron.id, t)
-		else:
-			neuron.weaken_connection(connection_neuron)
-			neuron.trained = True
-		# print("weakend input connection", neuron.id, t)
+		neuron_type = neuron_to_train[0]
+		neuron_id = neuron_to_train[1]
+		connection_neuron = neuron_to_train[2]
+		t = neuron_to_train[3]
+		strengthen = neuron_to_train[4]
 
-	def event_horrizon(self, horrizon):
-		events = []
-		output = []
+		if strengthen:
+			self.correct_pipelines_length[-1] += 1
+			if neuron_type == 0:
+				self.neural_network.input_neurons[neuron_id].strengthen_conenction(connection_neuron)
+				self.neural_network.input_neurons[neuron_id].trained = True
+			elif neuron_type == 1:
+				self.neural_network.standard_neurons[neuron_id].strengthen_conenction(connection_neuron)
+				self.neural_network.standard_neurons[neuron_id].trained = True
+			elif neuron_type == 2:
+				self.neural_network.output_neurons[neuron_id].strengthen_conenction(connection_neuron)
+				self.neural_network.output_neurons[neuron_id].trained = True
+		else:
+			if neuron_type == 0:
+				self.neural_network.input_neurons[neuron_id].weaken_connection(connection_neuron)
+				self.neural_network.input_neurons[neuron_id].trained = True
+			elif neuron_type == 1:
+				self.neural_network.standard_neurons[neuron_id].weaken_connection(connection_neuron)
+				self.neural_network.standard_neurons[neuron_id].trained = True
+			elif neuron_type == 2:
+				self.neural_network.output_neurons[neuron_id].weaken_connection(connection_neuron)
+				self.neural_network.output_neurons[neuron_id].trained = True
+def event_horrizon(self, horrizon):
+		self.fitnesses = []
 		self.nn_structure = []
 		self.output_list = []
 		for i in range(0, horrizon):
-			event, nn_output = self.run_loop()
-			events.append(event)
-			output.append(nn_output)
-		return events
+			fitness = self.run_loop()
+			self.fitnesses.append(fitness)
 
 	def run_loop(self):
 		events = []
 		inputs = self.passthrough_test.calculate_inputs()
 		outputs, network = self.neural_network.step(inputs, return_nn_states=True)
-		self.output_list.append(outputs)
-		self.passthrough_test.move(outputs)
+		fitness = self.passthrough_test.fitness(inputs, outputs)
 		self.nn_structure.append(network)
-		return self.passthrough_test.visualise_current_state(), outputs
+		return fitness
 
 
 input_size = 1
-
-nn = neural_network(2*input_size, 1, 1, log_history=False)  # init neural network
+nn = neural_network(input_size, 1, 1, log_history=False)  # init neural network
 trainer = spiking_neural_network_RL_trainer(nn, 0, input_size)  # init training system

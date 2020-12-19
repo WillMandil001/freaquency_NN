@@ -20,7 +20,7 @@ class spiking_neural_network_RL_trainer():
 		graph, = plt.plot([], [], 'o')
 
 		# for i in tqdm(range(0, 50)):
-		for i in range(0, 1000):
+		for i in range(0, 50):
 			self.correct_pipelines_length = []
 			model_fitness.append(self.test_current_network_fitness(num_of_tests=10))
 			if self.correct_pipelines_length:
@@ -50,7 +50,7 @@ class spiking_neural_network_RL_trainer():
 			self.simulation = simulation(goal_state=goal_state, start_state=start_state, left=self.left,
 										 right=self.right)  # init simulation
 
-			events = self.event_horrizon(horrizon=5)
+			events = self.event_horrizon(horrizon=50)
 
 			correct_events = []
 			previous_dist = 0
@@ -136,41 +136,38 @@ class spiking_neural_network_RL_trainer():
 		pipeline_in_holder = []
 		for time_step in correct_events:
 			self.correct_pipelines_length.append(0)
-			# print("======================, ", time_step)
+			print("======================, ", time_step)
 			for t in range(time_step + 1, -1, -1):
 				if t == time_step + 1:
 					### output neuron stage:
 					for out_neuron in self.nn_structure[t][2]:
 						if out_neuron.fired == True:
 							for st_neuron in self.nn_structure[t - 1][1]:
-								if st_neuron.fired == True and ["output",
-																out_neuron.id] in st_neuron.output_ids and st_neuron.trained == False:
-									self.hebbian_learn(st_neuron, ["output", out_neuron.id], t, strengthen=True)
+								if st_neuron.fired == True and ["output",out_neuron.id] in st_neuron.output_ids and st_neuron.trained == False:
+									self.hebbian_learn(1, st_neuron.id, ["output", out_neuron.id], t, strengthen=True)
 									pipeline_st_holder.append(st_neuron)
 				else:
 					if pipeline_st != []:
 						for neuron in pipeline_st:
 							# FOR STRENGTHENING -- hebbian learn on this neuron and add to pipeline:
 							for st_neuron in self.nn_structure[t - 1][1]:
-								if st_neuron.fired == True and ["standard",
-																neuron.id] in st_neuron.output_ids and st_neuron.trained == False:
-									self.hebbian_learn(st_neuron, ["standard", neuron.id], t, strengthen=True)
+								if st_neuron.fired == True and ["standard",neuron.id] in st_neuron.output_ids and st_neuron.trained == False:
+									self.hebbian_learn(1, st_neuron.id, ["standard", neuron.id], t, strengthen=True)
 									pipeline_st_holder.append(st_neuron)
 							for in_neuron in self.nn_structure[t - 1][0]:
 								if in_neuron.fired == True and neuron.id in in_neuron.output_ids and st_neuron.trained == False:
-									self.hebbian_learn(in_neuron, neuron.id, t, strengthen=True)
+									self.hebbian_learn(0, in_neuron.id, neuron.id, t, strengthen=True)
 							# FOR WEAKENING -- hebbian learn on this neuron and add to pipeline:
 							for st_neuron in self.nn_structure[t + 1][1]:
-								if st_neuron.fired == True and ["standard",
-																neuron.id] in st_neuron.output_ids and st_neuron.trained == False:
-									self.hebbian_learn(st_neuron, ["standard", neuron.id], t, strengthen=False)
+								if st_neuron.fired == True and ["standard", neuron.id] in st_neuron.output_ids and st_neuron.trained == False:
+									self.hebbian_learn(1, st_neuron.id, ["standard", neuron.id], t, strengthen=False)
 									pipeline_st_holder.append(st_neuron)
 							for in_neuron in self.nn_structure[t + 1][0]:
 								if in_neuron.fired == True and neuron.id in in_neuron.output_ids and st_neuron.trained == False:
-									self.hebbian_learn(in_neuron, neuron.id, t, strengthen=False)
+									self.hebbian_learn(0, in_neuron.id, neuron.id, t, strengthen=False)
 				pipeline_st = pipeline_st_holder
 
-	def hebbian_learn(self, neuron, connection_neuron, t, strengthen):
+	def hebbian_learn(self, neuron_type, neuron_id, connection_neuron, t, strengthen):
 		'''
 		For each succesful neural network output, adjust the parameters of each neuron according to the hebbian principle. 
 		Inputs: neuron = the neuron whos connection needs strengthening.
@@ -180,15 +177,27 @@ class spiking_neural_network_RL_trainer():
 				adjust neuron parameters:
 					1. connection strength.
 		'''
-		if strengthen == True:
+		if strengthen:
 			self.correct_pipelines_length[-1] += 1
-			neuron.strengthen_conenction(connection_neuron)
-			neuron.trained = True
-		# print("strengthened input connection", neuron.id, t)
+			if neuron_type == 0:
+				self.neural_network.input_neurons[neuron_id].strengthen_conenction(connection_neuron)
+				self.neural_network.input_neurons[neuron_id].trained = True
+			elif neuron_type == 1:
+				self.neural_network.standard_neurons[neuron_id].strengthen_conenction(connection_neuron)
+				self.neural_network.standard_neurons[neuron_id].trained = True
+			elif neuron_type == 2:
+				self.neural_network.output_neurons[neuron_id].strengthen_conenction(connection_neuron)
+				self.neural_network.output_neurons[neuron_id].trained = True
 		else:
-			neuron.weaken_connection(connection_neuron)
-			neuron.trained = True
-		# print("weakend input connection", neuron.id, t)
+			if neuron_type == 0:
+				self.neural_network.input_neurons[neuron_id].weaken_connection(connection_neuron)
+				self.neural_network.input_neurons[neuron_id].trained = True
+			elif neuron_type == 1:
+				self.neural_network.standard_neurons[neuron_id].weaken_connection(connection_neuron)
+				self.neural_network.standard_neurons[neuron_id].trained = True
+			elif neuron_type == 2:
+				self.neural_network.output_neurons[neuron_id].weaken_connection(connection_neuron)
+				self.neural_network.output_neurons[neuron_id].trained = True
 
 	def find_correct_steps(self, events):
 		'''
@@ -269,5 +278,5 @@ class spiking_neural_network_RL_trainer():
 
 input_size = 25
 
-nn = neural_network(input_size*2, 200, 2, log_history=False)  # init neural network
+nn = neural_network(input_size*2, 50, 2, log_history=False)  # init neural network
 trainer = spiking_neural_network_RL_trainer(nn, 0, input_size)  # init training system
