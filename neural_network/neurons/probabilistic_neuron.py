@@ -7,10 +7,11 @@ class neuron():
 		# self.input_weights = []
 		# self.input_ids = []
 		self.trained = False
+		self.change_transmition_value = 0.01
 		self.output_ids = []
 		self.recieved_fire_from = []
 		self.output_transmition_values = []  # conneciton strengths
-		self.resting_frequency = 0.1  # 0.2
+		self.resting_frequency = 0.05  # 0.2
 		self.decay_rate = 0.1 # 0.025
 		self.starting_transmition_value = 0.1
 		self.pose = pose
@@ -27,10 +28,10 @@ class neuron():
 			self.log_neurons_history()
 
 	def strengthen_conenction(self, output_id):
-		self.output_transmition_values[self.output_ids.index(output_id)] += 0.1
+		self.output_transmition_values[self.output_ids.index(output_id)] += self.change_transmition_value
 
 	def weaken_connection(self, output_id):
-		self.output_transmition_values[self.output_ids.index(output_id)] -= 0.1
+		self.output_transmition_values[self.output_ids.index(output_id)] -= self.change_transmition_value
 
 	def update(self, standard_neurons, output_neurons):
 		self.fired = False
@@ -78,6 +79,7 @@ class neuron():
 class input_neuron():
 	def __init__(self, pose, id_):
 		self.trained = False
+		self.change_transmition_value = 0.01
 		self.input_weights = []
 		self.output_ids = []
 		self.starting_transmition_value = 0.1
@@ -89,10 +91,10 @@ class input_neuron():
 		self.fired = False
 
 	def strengthen_conenction(self, output_id):
-		self.output_transmition_values[self.output_ids.index(output_id)] += 0.1
+		self.output_transmition_values[self.output_ids.index(output_id)] += self.change_transmition_value
 
 	def weaken_connection(self, output_id):
-		self.output_transmition_values[self.output_ids.index(output_id)] -= 0.1
+		self.output_transmition_values[self.output_ids.index(output_id)] -= self.change_transmition_value
 
 	def update(self, frequency, standard_neurons):
 		self.fired = False
