@@ -9,7 +9,9 @@ import math
 
 class passthrough_test():
 	def __init__(self):
-		pass
+		self.consistency_time_steps = 20
+		self.same = 0
+		self.value = [bool(random.getrandbits(1))]
 
 	def find_correct_pipelines(self, fitnesses, nn_structure):
 		'''
@@ -41,7 +43,7 @@ class passthrough_test():
 								for st_neuron in nn_structure[t - 1][1]:  # FOR STRENGTHENING
 									if st_neuron.fired == True and ["standard",neuron.id] in st_neuron.output_ids and st_neuron.trained == False:
 										pipeline_st_holder.append(st_neuron)
-										pipelines.append(1, st_neuron.id, ["standard", neuron.id], t, True)
+										pipelines.append([1, st_neuron.id, ["standard", neuron.id], t, True])
 								for in_neuron in nn_structure[t - 1][0]:
 									if in_neuron.fired == True and neuron.id in in_neuron.output_ids and st_neuron.trained == False:
 										pipelines.append([0, in_neuron.id, neuron.id, t, True])
@@ -59,12 +61,17 @@ class passthrough_test():
 		return pipelines
 
 	def fitness(self, input_, output):
-		if output and input_:
+		if input_[0] and output[0] and not output[1]:
 			return True
-		elif output == False and input_ == False:
+		elif not input_[0] and output[1] and not output[0]:
 			return True
-		else:
-			return False
+		return False
 
 	def calculate_inputs(self):
-		return [bool(random.getrandbits(1))]
+		if self.same < self.consistency_time_steps:
+			self.same += 1
+			return self.value
+		else:
+			self.same = 0
+			self.value = [bool(random.getrandbits(1))]
+			return self.value

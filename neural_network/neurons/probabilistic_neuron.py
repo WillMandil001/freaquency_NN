@@ -1,18 +1,17 @@
 import random
 
-
 ####################################################################
 class neuron():
 	def __init__(self, pose, id_, log_history=False):
 		# self.input_weights = []
 		# self.input_ids = []
 		self.trained = False
-		self.change_transmition_value = 0.01
+		self.change_transmition_value = 0.05
 		self.output_ids = []
 		self.recieved_fire_from = []
 		self.output_transmition_values = []  # conneciton strengths
 		self.resting_frequency = 0.05  # 0.2
-		self.decay_rate = 0.1 # 0.025
+		self.decay_rate = 0.001 # 0.025
 		self.starting_transmition_value = 0.1
 		self.pose = pose
 		self.id = id_
@@ -123,7 +122,7 @@ class output_neuron():
 		self.resting_frequency = 0.001
 		self.pose = pose
 		self.id = id_
-		self.decay_rate = 0.025
+		self.decay_rate = 0.01
 		self.current_state = 1.0
 		self.fired = False
 		self.transmition_value = 0.334

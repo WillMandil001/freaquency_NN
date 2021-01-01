@@ -1,14 +1,9 @@
 1. NN is working.
 2. Simulation for test environment is working.
 TO DO:
-	- ITS NOT TRAINING BECAUSE ITS NOT ACTUALLY EDITING THE CURRENT NEURONS BUT PREVIOUS NEURONS!!!!!
-    - double check that hebbian learning is working properly...
-    - Try doubling the inputs - 25 for state of robot and 25 for state of goal --- currently they are in the same system and the NN has no way of knowing whicvh is which -- would require non-markov learning which is more complex
+	- getting caught in infinate training loop for pass through gate 
     - Try removing randomness from the neuron updates
-    - way more simple test case 1-1-1 input is 1 then output should be 1
     - Lets test the gates:
-    	
-    	- and not or etc.
 To Do:
 	- DONE tool to plot individual neurons current state -> as a frequency plot.
 	- Have to convert neurons to run with their own unique connections

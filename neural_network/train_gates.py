@@ -1,8 +1,10 @@
 import math
 import random
-# from tqdm import tqdm
+
 import numpy as np
 import matplotlib.pyplot as plt
+
+#from tqdm import tqdm
 from matplotlib.animation import FuncAnimation
 from build_neural_network import neural_network
 from gates.passthrough_test import passthrough_test
@@ -11,17 +13,21 @@ from tools.visualise_network import show_network_topology
 
 
 class spiking_neural_network_RL_trainer():
-	def __init__(self, neural_network, left, right):
-		self.left = left
-		self.right = right
+	def __init__(self, neural_network):
 		self.neural_network = neural_network
-		# model_fitness = []
-		graph, = plt.plot([], [], 'o')
+		self.train_horrizon = 100
+		time = []
+		line1 = []
+		model_fitness = []
 
 		for i in range(0, 1000):
-			print("epoch:", i, " Fitness = ", sum(self.fitnesses))
 			self.train()
+			model_fitness.append(sum(self.fitnesses))
+			time.append(i)
+			line1 = self.live_plotter(time, model_fitness, line1)		
+			print("epoch:", i, " Fitness = ", sum(self.fitnesses))
 
+		graph, = plt.plot([], [], 'o')
 		epoch = [i for i in range(0, len(model_fitness))]
 		plt.plot(epoch, model_fitness, 'o')
 		plt.plot(np.unique(epoch), np.poly1d(np.polyfit(epoch, model_fitness, 1))(np.unique(epoch)))
@@ -55,14 +61,13 @@ class spiking_neural_network_RL_trainer():
 	def train(self):
 		self.log_history(True)
 		self.passthrough_test = passthrough_test()  # init simulation
-		self.event_horrizon(horrizon=100)  # run the simulation for 100 timesteps and return fitness of model at each time_step
+		self.event_horrizon()  # run the simulation for 100 timesteps and return fitness of model at each time_step
 		self.train_neural_network(self.fitnesses)
 		self.log_history(False)
 
 	def train_neural_network(self, fitnesses):
 		if fitnesses != None:
 			pipelines = self.passthrough_test.find_correct_pipelines(fitnesses, self.nn_structure)
-
 		for neuron_to_train in pipelines:
 			self.hebbian_learn(neuron_to_train)
 
@@ -83,7 +88,6 @@ class spiking_neural_network_RL_trainer():
 		strengthen = neuron_to_train[4]
 
 		if strengthen:
-			self.correct_pipelines_length[-1] += 1
 			if neuron_type == 0:
 				self.neural_network.input_neurons[neuron_id].strengthen_conenction(connection_neuron)
 				self.neural_network.input_neurons[neuron_id].trained = True
@@ -103,23 +107,42 @@ class spiking_neural_network_RL_trainer():
 			elif neuron_type == 2:
 				self.neural_network.output_neurons[neuron_id].weaken_connection(connection_neuron)
 				self.neural_network.output_neurons[neuron_id].trained = True
-def event_horrizon(self, horrizon):
-		self.fitnesses = []
-		self.nn_structure = []
-		self.output_list = []
-		for i in range(0, horrizon):
-			fitness = self.run_loop()
-			self.fitnesses.append(fitness)
+
+	def event_horrizon(self):
+			self.fitnesses = []
+			self.nn_structure = []
+			self.output_list = []
+			for i in range(0, self.train_horrizon):
+				fitness = self.run_loop()
+				self.fitnesses.append(fitness)
 
 	def run_loop(self):
 		events = []
 		inputs = self.passthrough_test.calculate_inputs()
 		outputs, network = self.neural_network.step(inputs, return_nn_states=True)
-		fitness = self.passthrough_test.fitness(inputs, outputs)
+		fitness_ = self.passthrough_test.fitness(inputs, outputs)
 		self.nn_structure.append(network)
-		return fitness
+		return fitness_
+
+	def live_plotter(self, x_vec, y1_data, line1, identifier='', pause_time=0.1):
+		if line1 == []:
+			plt.ion()  # this is the call to matplotlib that allows dynamic plotting
+			fig = plt.figure(figsize=(13,6))
+			ax = fig.add_subplot(111)
+			line1, = ax.plot(x_vec,y1_data,'-o',alpha=0.8)  # create a variable for the line so we can later update it
+			plt.xlabel('Model fitness')  # update plot label/title
+			plt.ylabel('Training time_step')
+			plt.title('Model training')
+			plt.show()
+
+		plt.xlim([np.min(x_vec)-np.std(x_vec),np.max(x_vec)+np.std(x_vec)])
+		plt.ylim([np.min(y1_data)-np.std(y1_data),np.max(y1_data)+np.std(y1_data)])
+
+		line1.set_data(x_vec,y1_data)
+		plt.pause(pause_time)
+		return line1
 
 
 input_size = 1
-nn = neural_network(input_size, 1, 1, log_history=False)  # init neural network
-trainer = spiking_neural_network_RL_trainer(nn, 0, input_size)  # init training system
+nn = neural_network(input_size, 10, 2, log_history=False)  # init neural network
+trainer = spiking_neural_network_RL_trainer(nn)  # init training system

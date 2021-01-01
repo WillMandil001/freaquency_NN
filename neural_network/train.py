@@ -1,27 +1,37 @@
 import math
 import random
-# from tqdm import tqdm
+
 import numpy as np
 import matplotlib.pyplot as plt
+
+#from tqdm import tqdm
 from matplotlib.animation import FuncAnimation
 from build_neural_network import neural_network
-from single_d_position_test_case import simulation
 from tools.visualise_neuron import show_neuron_spiking_plot
 from tools.visualise_network import show_network_topology
+from single_d_position_test_case import simulation
 
 
 class spiking_neural_network_RL_trainer():
 	def __init__(self, neural_network, left, right):
 		self.left = left
 		self.right = right
+		self.test_horrizon = 20
 		self.neural_network = neural_network
-		model_fitness = []
 		graph, = plt.plot([], [], 'o')
 
+		model_fitness = []
+		time = []
+		line1 = []
+
 		# for i in tqdm(range(0, 50)):
-		for i in range(0, 500):
+		for i in range(0, 1000):
 			self.correct_pipelines_length = []
-			model_fitness.append(self.test_current_network_fitness(num_of_tests=10))
+			model_fitness.append(self.test_current_network_fitness(num_of_tests=4))
+
+			time.append(i)
+			line1 = self.live_plotter(time, model_fitness, line1)
+
 			if self.correct_pipelines_length:
 				print("epoch:", i, "fitness: ", model_fitness[-1], "number pipelines: ", len(self.correct_pipelines_length), " mean pipeline length, ", sum(self.correct_pipelines_length) / len(self.correct_pipelines_length))
 			else:
@@ -29,7 +39,7 @@ class spiking_neural_network_RL_trainer():
 			correct_steps = self.train()
 			print("correct steps: ", len(correct_steps))
 
-		model_fitness.append(self.test_current_network_fitness(num_of_tests=10, print_=True))
+		model_fitness.append(self.test_current_network_fitness(num_of_tests=4, print_=True))
 
 		print(model_fitness)
 
@@ -49,7 +59,7 @@ class spiking_neural_network_RL_trainer():
 			self.simulation = simulation(goal_state=goal_state, start_state=start_state, left=self.left,
 										 right=self.right)  # init simulation
 
-			events = self.event_horrizon(horrizon=20)
+			events = self.event_horrizon(horrizon=self.test_horrizon)
 
 			correct_events = []
 			previous_dist = 0
@@ -233,37 +243,6 @@ class spiking_neural_network_RL_trainer():
 
 		return correct_events
 
-	def calc_fitness(self, events):
-		fitness = [0 for i in range(0, len(events))]
-		# for i in range(1, len(events)):
-		#   if "8" in events[i]:
-		#       current_state = events[i].index("8")  # calc dist to goal
-		#       goal_state = events[i].index("8")
-		#   else:
-		#       current_state = events[i].index("o")  # calc dist to goal
-		#       goal_state = events[i].index("x")
-
-		#   if current_state < goal_state:
-		#       current_dist = math.sqrt((current_state - goal_state)**2)
-		#   else:
-		#       current_dist = math.sqrt((goal_state - current_state)**2)
-
-		#   if "8" in events[i-1]:
-		#       previous_current_state = events[i-1].index("8")  # calc dist to goal
-		#       previous_goal_state = events[i-1].index("8")
-		#   self.right = right
-		#   else:
-		#       previous_current_state = events[i-1].index("o")  # calc previous dist to goal
-		#       previous_goal_state = events[i-1].index("x")
-		#   if previous_current_state < previous_goal_state:
-		#       previous_dist = math.sqrt((previous_current_state - previous_goal_state)**2)
-		#   else:
-		#       previous_dist = math.sqrt((previous_goal_state - previous_current_state)**2)
-
-		#   if current_dist < previous_dist:
-		#       fitness[i] = 1
-		return fitness
-
 	def event_horrizon(self, horrizon):
 		events = []
 		output = []
@@ -284,8 +263,25 @@ class spiking_neural_network_RL_trainer():
 		self.nn_structure.append(network)
 		return self.simulation.visualise_current_state(), outputs
 
+	def live_plotter(self, x_vec, y1_data, line1, identifier='', pause_time=0.1):
+		if line1 == []:
+			plt.ion()  # this is the call to matplotlib that allows dynamic plotting
+			fig = plt.figure(figsize=(13,6))
+			ax = fig.add_subplot(111)
+			line1, = ax.plot(x_vec,y1_data,'-o',alpha=0.8)  # create a variable for the line so we can later update it
+			plt.xlabel('Model fitness')  # update plot label/title
+			plt.ylabel('Training time_step')
+			plt.title('Model training')
+			plt.show()
 
-input_size = 25
+		plt.xlim([np.min(x_vec)-np.std(x_vec),np.max(x_vec)+np.std(x_vec)])
+		plt.ylim([np.min(y1_data)-np.std(y1_data),np.max(y1_data)+np.std(y1_data)])
 
-nn = neural_network(input_size*2, 50, 2, log_history=False)  # init neural network
+		line1.set_data(x_vec,y1_data)
+		plt.pause(pause_time)
+		return line1
+
+input_size = 10
+
+nn = neural_network(input_size*2, 10, 2, log_history=False)  # init neural network
 trainer = spiking_neural_network_RL_trainer(nn, 0, input_size)  # init training system
